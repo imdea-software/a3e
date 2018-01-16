@@ -35,12 +35,12 @@ module Troyd
   TD   = "troyd"
   TDIR = TROYD + "/../" + TD
 
-  QUIET = " > /dev/null 2>&1"
+  QUIET = " " #" > /dev/null 2>&1"
 
   def Troyd.setenv
     aup = "android update project"
 #     system("#{aup} -t android-16 -p #{TDIR} #{QUIET}")
-	system("#{aup} -t android-16 -p #{TDIR} ")
+	system("#{aup} -t android-10 -p #{TDIR} ")
   end
 
   require "#{TROYD}/resign"

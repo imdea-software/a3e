@@ -106,7 +106,7 @@ def run_app (act, startr, noloop, record, rec_cmds)
 			out = eval c 
 			print "execution completed.\n"
 			open(PARENT+"/"+act+"_command_history.txt", 'a') { |f|
-  			f.puts c
+  				f.puts c
 			}
 			current_act=current_act + " "
 # 		saving the previous activity
@@ -269,6 +269,8 @@ else
 # 	print "\n package found 2 " + acts[0]+"\n"
 	act=acts[0]
 end
+# @CHANGE
+print "run_app: " + act + ", 1, " + noloop.to_s + "\n"
 run_app act, 1, noloop, record, rec_cmds
 
 

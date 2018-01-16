@@ -96,6 +96,7 @@ module ADB
   FAIL = "Failure"
 
   def ADB.uninstall(pkg=PKG)
+    # @CHANGE: @UPDATE: orignal repo https://github.com/tanzirul/a3e/commit/b74384f3feb6acbe00ed1d18e9c83f7c4f7d20b3#diff-4db02a424aa8bb58fd7003a0d05ba1e7
     sync_msg("#{@@acmd} shell pm uninstall #{pkg}", [SUCC, FAIL])
   end
 

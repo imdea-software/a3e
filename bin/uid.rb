@@ -36,7 +36,7 @@ module Uid
   AT = UID + "/../tools/apktool.jar"
 
   def Uid.change_uid(bef, aft)
-    q = " > /dev/null 2>&1"
+    q = " " #" > /dev/null 2>&1"
     dir = rand(36**8).to_s(36) # random string with size 8     
     system("java -Djava.awt.headless=true -jar #{AT} d -f --no-src --keep-broken-res #{bef} -o #{dir} #{q}")
 	  # system("java -Djava.awt.headless=true -jar #{AT} d -f --no-src --keep-broken-res #{bef} -o #{dir} ")

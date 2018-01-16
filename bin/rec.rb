@@ -140,7 +140,7 @@ def run_app (act, startr, noloop, record, rec_cmds)
   			print "> "
   			stop = false
   			$stdin.each_line do |line|
-    		rec_cmds << line if record
+#     	rec_cmds << line if record
     		cmd = line.split(pattern)[0]
     		case cmd
    				when "finish"
@@ -157,7 +157,7 @@ def run_app (act, startr, noloop, record, rec_cmds)
         				puts out if out
       				rescue SyntaxError => se
         				puts "unknown command: #{line}"
-        				rec_cmds.pop if record
+#         			rec_cmds.pop if record
       				end
     			end
     		break
@@ -222,18 +222,20 @@ end
 
 apk = ARGV[0]
 
-use_emulator = false
+## SHAUVIK: Reusing already booted up emulator
+## Necessary for setup and coverage collection
+use_emulator = true
 #ADB.restart
-if not ADB.online?
-  # start and synchronize with emulator
-  avd = AVD.new(avd_name, avd_opt)
-  if not avd.exists?
-    avd.create
-  end
-  avd.start
-  use_emulator = true
-  sleep(6)
-end
+#if not ADB.online?
+#  # start and synchronize with emulator
+#  avd = AVD.new(avd_name, avd_opt)
+#  if not avd.exists?
+#    avd.create
+#  end
+#  avd.start
+#  use_emulator = true
+#  sleep(6)
+#end
 
 if dev_name != ""
   ADB.device dev_name
@@ -358,5 +360,3 @@ CODE
   f.puts code
   f.close
 end
-
-

@@ -79,7 +79,7 @@ module ADB
   def ADB.online?
     dv_cnt, em_cnt = ADB.devices
     return false if dv_cnt == 0
-    if em_cnt > 0 
+    if em_cnt > 0
       begin
         Timeout.timeout(TO) do
           sync_logcat("", @@altr) != ""
@@ -122,7 +122,13 @@ module ADB
     opts.each do |k, v|
       ext << " -e #{k} \"#{v}\""
     end
-    sync_logcat("#{@@run} -e cmd #{cmd}#{ext}", @@fltr)
+    begin
+      Timeout.timeout(10) do
+        sync_logcat("#{@@run} -e cmd #{cmd}#{ext}", @@fltr)
+      end
+    rescue Timeout::Error
+      false
+    end
   end
 
 private
@@ -131,14 +137,21 @@ private
     out = ""
     system("#{@@lcat} -c")
     ADB.runcmd(cmd)
-    while out == "" do
-      sleep(TO)
-      out = `#{filter}`
-      sanitized = ""
-      out.each_line do |line|
-        sanitized += line if line.include? PKG
-      end # device log is different
-      out = sanitized
+    begin
+      Timeout.timeout(5) do
+        while out == "" do
+          sleep(TO)
+          out = `#{filter}`
+          puts out
+          sanitized = ""
+          out.each_line do |line|
+            sanitized += line if line.include? PKG
+          end # device log is different
+          out = sanitized
+        end
+      end
+    rescue Timeout::Error
+      false
     end
     out
   end

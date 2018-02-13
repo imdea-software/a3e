@@ -39,33 +39,34 @@ module Uid
     q = " " #" > /dev/null 2>&1"
     dir = rand(36**8).to_s(36) # random string with size 8     
     system("java -Djava.awt.headless=true -jar #{AT} d -f --no-src --keep-broken-res #{bef} -o #{dir} #{q}")
-	  # system("java -Djava.awt.headless=true -jar #{AT} d -f --no-src --keep-broken-res #{bef} -o #{dir} ")
+
     meta = dir + "/AndroidManifest.xml"
     f = File.open(meta, 'r')
     doc = Nokogiri::XML(f)
     f.close
 
     pref = "android"
-    roots = doc.xpath("/manifest")
+    manifest = "/manifest"
+    roots = doc.xpath(manifest)
     roots.each do |root|
       root["#{pref}:sharedUserId"] = "umd.troyd"
     end
-    
-    apps = doc.xpath("/manifest/application")
-	apps.each do |app|
-      app["#{pref}:process"] = "a3e.process"
+
+    application = "#{manifest}/application"
+    apps = doc.xpath(application)
+    apps.each do |app|
+      app["#{pref}:process"] = "umd.troyd.process"
     end
     
-    debuggs = doc.xpath("/manifest/application")
-	debuggs.each do |debugg|
+	apps.each do |debugg|
       debugg["#{pref}:debuggable"] = "true"
     end
-    
+
     f = File.open(meta, 'w')
     doc.write_xml_to(f)
     f.close
+
     system("java -jar #{AT} b -f #{dir} -o #{aft} #{q}")
-    # system("java -jar #{AT} b -f #{dir} -o #{aft} ")
     system("rm -rf #{dir}")
   end
 end

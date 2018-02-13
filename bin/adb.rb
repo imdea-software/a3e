@@ -33,7 +33,7 @@ module ADB
   require 'timeout'
 
   ADBS = File.dirname(__FILE__)
-  require "#{ADBS}/aapt"
+  require_relative "aapt"
 
   def ADB.restart
     system("adb kill-server")

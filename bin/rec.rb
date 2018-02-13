@@ -36,7 +36,7 @@ require 'rubygems'
 require 'optparse'
 
 REC = File.dirname(__FILE__)
-PARENT  =File.expand_path(File.dirname(__FILE__))+"/../temp"
+PARENT = File.expand_path(File.dirname(__FILE__))+"/../temp"
 
 require_relative 'avd'
 require_relative 'troyd'
@@ -58,7 +58,7 @@ def parse_act_names act_name
 end
 
 def run_app (act, startr, noloop, record, rec_cmds)
-	
+
 	if startr==1
 		ADB.ignite act
 	end
@@ -73,23 +73,23 @@ def run_app (act, startr, noloop, record, rec_cmds)
 # 	rec_cmds = []
 
 	# from here just use the get views command and save it to a file
-	#now get input from a file and do as described 
+	#now get input from a file and do as described
 	if noloop==false
 		out= eval "getViews"
-		File.open(PARENT+"/"+"test.out", 'w') do |f2|  
-  	
-  			f2.puts out  
-		end  
+		File.open(PARENT+"/"+"test.out", 'w') do |f2|
+
+  			f2.puts out
+		end
 # 	test whether the activity was explored before
 		if File.exist?(PARENT+"/"+act+"_command.txt")
 # 		prepare for the new command set
 			param="java -Xmx512m -jar TroydWrapper.jar "+PARENT+"/"+"test.out "+PARENT+"/"+act+"_command.txt"
 			system param
-		
+
 			if File.exist?(PARENT+"/"+act+"_command_history.txt")
 				UTIL.compare_output(PARENT+"/"+act+"_command.txt", PARENT+"/"+act+"_command_history.txt", PARENT+"/"+act+"_command.txt")
 			end
-		
+
 		else
 # 		activity was not explored before
 			param="java -Xmx512m -jar TroydWrapper.jar "+PARENT+"/"+"test.out "+PARENT+"/"+act+"_command.txt"
@@ -103,7 +103,7 @@ def run_app (act, startr, noloop, record, rec_cmds)
 		for c in opt_cmds
 			print "executing command...\n"
 			print c + "\n"
-			out = eval c 
+			out = eval c
 			print "execution completed.\n"
 			open(PARENT+"/"+act+"_command_history.txt", 'a') { |f|
   				f.puts c
@@ -127,11 +127,11 @@ def run_app (act, startr, noloop, record, rec_cmds)
 				run_app current_act, 0, noloop, record, rec_cmds
 				out= eval "back"
 			end
-		#run_app 
+		#run_app
 		end
 		out= eval "back"
 		run_app last_act, 0, noloop, record, rec_cmds
-	
+
 	# current_act= eval "getActivities"
 # 	current_act=parse_act_names current_act
 # 	run_app current_act,hashActs,0
@@ -151,7 +151,7 @@ def run_app (act, startr, noloop, record, rec_cmds)
       				ADB.ignite act # restart the target app
     			else
       				begin
-        
+
         				out = eval line if cmds.include? cmd
         				print "now: " + out + "\n"
         				puts out if out

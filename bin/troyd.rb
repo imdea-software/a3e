@@ -39,8 +39,8 @@ module Troyd
 
   def Troyd.setenv
     aup = "android update project"
-#     system("#{aup} -t android-10 -p #{TDIR} #{QUIET}")
-    system("#{aup} -t android-16 -p #{TDIR}")
+    tgt = Troyd.target
+    system("#{aup} -t android-#{tgt} -p #{TDIR} #{QUIET}")
   end
 
   require "#{TROYD}/resign"
@@ -48,11 +48,9 @@ module Troyd
 
   def Troyd.rebuild(pkg)
     ADB.uninstall
- 	system("cd #{TDIR}; ant clean #{QUIET}")
-#      system("cd #{TDIR}; ant clean ")
+    system("cd #{TDIR}; ant clean #{QUIET}")
     rename(pkg)
-     system("cd #{TDIR}; ant debug #{QUIET}")
-#      system("cd #{TDIR}; ant debug")
+    system("cd #{TDIR}; ant debug #{QUIET}")
     dbg = TDIR + "/bin/#{TD}-debug.apk"
     apk = TDIR + "/bin/#{TD}.apk"
     Resign.resign(dbg, apk)
@@ -60,6 +58,21 @@ module Troyd
   end
 
 private
+
+  def Troyd.target(tgt="19")
+    pattern = /\"android-(.+)\"/
+    targets = `android list targets | grep android-`.scan(pattern)
+    if targets
+      targets.flatten!
+      if targets.include? tgt
+        tgt
+      else
+        targets[0]
+      end
+    else
+      raise "no target SDK installed?"
+    end
+  end
 
   require 'nokogiri'
 

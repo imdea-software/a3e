@@ -122,11 +122,13 @@ module ADB
     opts.each do |k, v|
       ext << " -e #{k} \"#{v}\""
     end
+    # @CHANGE: @AoD: @FIX: Added timeout to brake the loop in some textview clicks"
     begin
-      Timeout.timeout(10) do
+      Timeout.timeout(4) do
         sync_logcat("#{@@run} -e cmd #{cmd}#{ext}", @@fltr)
       end
     rescue Timeout::Error
+      puts "@AoD: @FIX: ADB.cmd: Timeout::Error"
       false
     end
   end
@@ -137,12 +139,14 @@ private
     out = ""
     system("#{@@lcat} -c")
     ADB.runcmd(cmd)
+    # @CHANGE: @AoD: @FIX: Added timeout to brake the loop in some textview clicks"
     begin
-      Timeout.timeout(5) do
+      Timeout.timeout(3) do
         while out == "" do
           sleep(TO)
           out = `#{filter}`
-          puts out
+          # @CHANGE: @AoD: @DEBUG: ADB.sync_logcat: Debug lines in logcat from Troyd.java: out:"
+          # puts out
           sanitized = ""
           out.each_line do |line|
             sanitized += line if line.include? PKG
@@ -151,6 +155,7 @@ private
         end
       end
     rescue Timeout::Error
+      puts "@AoD: @FIX: ADB.sync_logcat: Timeout::Error"
       false
     end
     out

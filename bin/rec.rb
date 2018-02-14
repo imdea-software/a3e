@@ -63,6 +63,13 @@ def run_app (act, startr, noloop, record, rec_cmds)
 		ADB.ignite act
 	end
 
+	if startr==0 && act=="" || act==nil
+		puts "@AoD: @FIX: activity empty or nil: finish"
+		finish
+		exit
+	end
+
+
 # 	SOFAR = "sofar"
 	pattern = /\(|\s|\)/
 
@@ -97,7 +104,7 @@ def run_app (act, startr, noloop, record, rec_cmds)
 		end
 
 		current_act=act
-		print "current activity: "+act+"\n"
+		print "@AoD: @DEBUG: current activity: "+current_act+"\n"
 		opt_cmds=ACT.extract_act(PARENT+"/"+act+"_command.txt")
 		last_act=""
 		for c in opt_cmds
@@ -116,8 +123,9 @@ def run_app (act, startr, noloop, record, rec_cmds)
 # 		parse the names
 # now last act is the old activity
 			current_act=parse_act_names current_act
+			print "current_act: "+current_act+"\n"
 			if current_act==last_act
-# 			print "unchanged" +"\n"
+				print "unchanged: "+current_act+"\n"
 # 			sleep(1)
 				run_app current_act, 0, noloop, record, rec_cmds
 			else
@@ -239,6 +247,7 @@ use_emulator = true
 
 if dev_name != ""
   ADB.device dev_name
+	avd = AVD.new(dev_name)
 end
 
 # rebuild and install troyd
@@ -269,9 +278,13 @@ else
 # 	print "\n package found 2 " + acts[0]+"\n"
 	act=acts[0]
 end
-# @CHANGE
+# @CHANGE: @AoD: @DEBUG:
 print "run_app: " + act + ", 1, " + noloop.to_s + "\n"
 run_app act, 1, noloop, record, rec_cmds
+if use_emulator
+	puts "@AoD: @FIX: avd.stop"
+  avd.stop
+end
 
 
 code = ""

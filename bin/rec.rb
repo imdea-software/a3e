@@ -47,23 +47,27 @@ require_relative 'util'
 include Commands
 
 
-def parse_act_names act_name
-	last_act=""
-	act_name.each_line do |line|
-# 		print ": "+line+"\n"
-		last_act=line.split(/:/).last.strip!
-# 		print ": "+last_act+"\n"
+def parse_act_names pkg, act_name
+  last_act=""
+  act_name.each_line do |line|
+    print "parse_act_names: "+line+"\n"
+    if line.include?(pkg) && line.include?("opened")
+		  last_act=line.split(/:/).last.strip!
+      print "parse_act_names: last_act: "+last_act+"\n"
+    end
 	end
 	last_act=last_act
 end
 
-def run_app (act, startr, noloop, record, rec_cmds)
-	
+
+def run_app (pkg, act, startr, noloop, record, rec_cmds, n_act_backs)
+
 	if startr==1
-		ADB.ignite act
+    ADB.ignite act
 	end
 
-	if startr==0 && act=="" || act==nil
+  # if startr==0 && (act=="" || act==nil)
+  if startr==0 && n_act_backs==0
 		puts "@AoD: @FIX: activity empty or nil: finish"
 		finish
 		exit
@@ -80,23 +84,23 @@ def run_app (act, startr, noloop, record, rec_cmds)
 # 	rec_cmds = []
 
 	# from here just use the get views command and save it to a file
-	#now get input from a file and do as described 
+	#now get input from a file and do as described
 	if noloop==false
 		out= eval "getViews"
-		File.open(PARENT+"/"+"test.out", 'w') do |f2|  
-  	
-  			f2.puts out  
-		end  
+		File.open(PARENT+"/"+"test.out", 'w') do |f2|
+
+  			f2.puts out
+		end
 # 	test whether the activity was explored before
 		if File.exist?(PARENT+"/"+act+"_command.txt")
 # 		prepare for the new command set
 			param="java -Xmx512m -jar TroydWrapper.jar "+PARENT+"/"+"test.out "+PARENT+"/"+act+"_command.txt"
 			system param
-		
+
 			if File.exist?(PARENT+"/"+act+"_command_history.txt")
 				UTIL.compare_output(PARENT+"/"+act+"_command.txt", PARENT+"/"+act+"_command_history.txt", PARENT+"/"+act+"_command.txt")
 			end
-		
+
 		else
 # 		activity was not explored before
 			param="java -Xmx512m -jar TroydWrapper.jar "+PARENT+"/"+"test.out "+PARENT+"/"+act+"_command.txt"
@@ -106,11 +110,11 @@ def run_app (act, startr, noloop, record, rec_cmds)
 		current_act=act
 		print "@AoD: @DEBUG: current activity: "+current_act+"\n"
 		opt_cmds=ACT.extract_act(PARENT+"/"+act+"_command.txt")
-		last_act=""
+    last_act=""
 		for c in opt_cmds
 			print "executing command...\n"
 			print c + "\n"
-			out = eval c 
+			out = eval c
 			print "execution completed.\n"
 			open(PARENT+"/"+act+"_command_history.txt", 'a') { |f|
   				f.puts c
@@ -119,27 +123,41 @@ def run_app (act, startr, noloop, record, rec_cmds)
 # 		saving the previous activity
 			last_act=current_act.strip!
 # 		get all activities
-			current_act= eval "getActivities"
+      print "---------------------------------------------------------------\n"
+      print eval "getActivities"
+      print "---------------------------------------------------------------\n"
+      current_act= eval "getActivities"
+      # print "eval \"getActivities\": current_act: "+current_act+"\n"
 # 		parse the names
 # now last act is the old activity
-			current_act=parse_act_names current_act
-			print "current_act: "+current_act+"\n"
-			if current_act==last_act
-				print "unchanged: "+current_act+"\n"
-# 			sleep(1)
-				run_app current_act, 0, noloop, record, rec_cmds
-			else
-				print "new activity detected.\n"
-# 			last_act=current_act
-# 			sleep(3)
-				run_app current_act, 0, noloop, record, rec_cmds
-				out= eval "back"
-			end
-		#run_app 
+      if ! (current_act.nil? || current_act.empty?)
+        print "if ! (current_act.nil? || current_act.empty?): current_act: "+current_act+"\n"
+        current_act=parse_act_names pkg, current_act
+        # @AoD: @ERROR: /home/vagrant//tools//A3E//bin/rec.rb:52:in `parse_act_names': undefined method `each_line' for false:FalseClass (NoMethodError)
+        print "parse_act_names current_act: current_act: "+current_act+"\n"
+        print "last_act: "+last_act+"\n"
+        if current_act.include?(pkg)
+          if current_act==last_act
+            print "unchanged: "+current_act+"\n"
+    # 			sleep(1)
+            run_app pkg, current_act, 0, noloop, record, rec_cmds, n_act_backs
+          else
+            print "new activity detected.\n"
+      #         last_act=current_act
+    # 			sleep(3)
+            run_app pkg, current_act, 0, noloop, record, rec_cmds, n_act_backs+1
+            out= eval "back"
+          end
+        else
+          print "@AoD: @WARN: activity unknown.\n"
+          run_app pkg, current_act, 0, noloop, record, rec_cmds, n_act_backs
+        end
+      end
+		#run_app
 		end
 		out= eval "back"
-		run_app last_act, 0, noloop, record, rec_cmds
-	
+		run_app pkg, last_act, 0, noloop, record, rec_cmds, n_act_backs-1
+
 	# current_act= eval "getActivities"
 # 	current_act=parse_act_names current_act
 # 	run_app current_act,hashActs,0
@@ -159,7 +177,7 @@ def run_app (act, startr, noloop, record, rec_cmds)
       				ADB.ignite act # restart the target app
     			else
       				begin
-        
+
         				out = eval line if cmds.include? cmd
         				print "now: " + out + "\n"
         				puts out if out
@@ -280,7 +298,7 @@ else
 end
 # @CHANGE: @AoD: @DEBUG:
 print "run_app: " + act + ", 1, " + noloop.to_s + "\n"
-run_app act, 1, noloop, record, rec_cmds
+run_app pkg, act, 1, noloop, record, rec_cmds, 1
 if use_emulator
 	puts "@AoD: @FIX: avd.stop"
   avd.stop
